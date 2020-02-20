@@ -1,14 +1,25 @@
-import * as React from 'react';
-import styles from './Button.module.css';
+import * as React from "react";
+import styles from "./Button.module.css";
 
-const button = (props: {
-    clicked: (event: React.MouseEvent) => void;
-    children: any;
-    btnType: "Danger" | "Success";
-}) => (
-    <button
-        className={[styles.Button, styles[props.btnType]].join(' ')}
-        onClick={props.clicked}>{props.children}</button>
-);
+interface ButtonProps
+  extends React.DetailedHTMLProps<
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    HTMLButtonElement
+  > {
+  btnType: "Danger" | "Success";
+}
+
+const button = ({ btnType, ...props }: ButtonProps) => {
+    const classNames = [styles.Button, styles[btnType]];
+    if(props.disabled) {
+        classNames.push(styles.Disabled)
+    }
+
+  return (
+    <button className={classNames.join(" ")} {...props}>
+      {props.children}
+    </button>
+  );
+};
 
 export default button;
