@@ -9,20 +9,41 @@ import Button from '../../../components/UI/Button/Button';
 import { AxiosResponse } from 'axios';
 import Spinner from '../../../components/UI/Spinner/Spinner';
 
+import Input from '../../../components/UI/Input/Input'
+
 interface ContactDataProps {
     ingredients: BurgerIngredients;
     price: number;
     afterOrderHandler: () => void;
 }
+interface Element {
+    label: string;
+    elementType: keyof typeof Input;
+    value: string;
+}
+interface InputElement extends Element{
+    elementConfig: {
+        type: string;
+        placeholder: string;
+    }
+}
+interface SelectElement extends Element {
+    elementConfig: {
+        options: Array<{
+            value: string;
+            displayValue: string;
+        }>
+    }
+}
 
 interface ContactDataState {
-    customer: {
-        name: string;
-        email: string;
-        address: {
-            street: string;
-            postalCode: string;
-        }
+    orderForm: {
+        name: InputElement;
+        email: InputElement;
+        street: InputElement;
+        postalCode: InputElement;
+        country: InputElement;
+        deliveryMethod: SelectElement;
     }
     loading: boolean;
 }
@@ -33,12 +54,63 @@ class ContactData extends React.Component<ContactDataProps, ContactDataState> {
         super(props);
 
         this.state = {
-            customer: {
-                name: '',
-                email: '',
-                address: {
-                    street: '',
-                    postalCode: ''
+            orderForm: {
+
+                name: {
+                    label: 'Name',
+                    elementType: 'input',
+                    elementConfig: {
+                        type: 'text',
+                        placeholder: 'Your name'
+                    },
+                    value: ''
+                },
+                email: {
+                    label: 'Mail',
+                    elementType: 'input',
+                    elementConfig: {
+                        type: 'email',
+                        placeholder: 'Your Mail'
+                    },
+                    value: ''
+                },
+                street: {
+                    label: 'Street',
+                    elementType: 'input',
+                    elementConfig: {
+                        type: 'text',
+                        placeholder: 'Your street'
+                    },
+                    value: ''
+                },
+                postalCode: {
+                    label: 'Postal code',
+                    elementType: 'input',
+                    elementConfig: {
+                        type: 'text',
+                        placeholder: 'Your postal code'
+                    },
+                    value: ''
+                },
+                country: {
+                    label: 'Country',
+                    elementType: 'input',
+                    elementConfig: {
+                        type: 'text',
+                        placeholder: 'country'
+                    },
+                    value: ''
+                },
+                deliveryMethod: {
+                    label: 'Delivery method',
+                    elementType: 'select',
+                    elementConfig: {
+                        options: [
+                            {value: 'cheapest', displayValue: 'Cheapest'},
+                            {value: 'fastest', displayValue: 'Fastest'}
+                        ]
+                    },
+                    value: 'cheapest'
                 }
             },
             loading: false
@@ -54,8 +126,11 @@ class ContactData extends React.Component<ContactDataProps, ContactDataState> {
     formSubmitHandler(event: React.MouseEvent) {
         event.preventDefault();
         this.setState({loading: true})
+        const customer = {
+            //TODO: Create customer
+        }
         axios.post('/orders.json', {
-            customer: this.state.customer,
+            customer,
             deliveryMethod: 'fastest',
             ingredients: this.props.ingredients,
             price: this.props.price
@@ -65,36 +140,22 @@ class ContactData extends React.Component<ContactDataProps, ContactDataState> {
         });
     }
 
+    toInputElement(element: InputElement | SelectElement, key: number) {
+        const Type = Input[element.elementType];
+        //TODO: Should implement onChange event
+        return <Type
+            key={key}
+            label={element.label}
+            {...element.elementConfig}
+            value={element.value} />
+    }
+
     render() {
+        const formElements = Object.values({...this.state.orderForm})
+            .map(this.toInputElement);
         let form = (
                 <form>
-                    <input 
-                        className={styles.Input} 
-                        type="text" name="name"
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => this.onChangeHandler((state: ContactDataState) => state.customer.name = event.target.value)}
-                        value={this.state.customer.name}
-                        placeholder="Your name" />
-                    <input 
-                        className={styles.Input}
-                        type="email"
-                        name="email"
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => this.onChangeHandler((state: ContactDataState) => state.customer.email = event.target.value)}
-                        value={this.state.customer.email}
-                        placeholder="Your Mail" />
-                    <input
-                        className={styles.Input}
-                        type="text"
-                        name="street"
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => this.onChangeHandler((state: ContactDataState) => state.customer.address.street = event.target.value)}
-                        value={this.state.customer.address.street}
-                        placeholder="Street" />
-                    <input
-                        className={styles.Input}
-                        type="text"
-                        name="postal"
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => this.onChangeHandler((state: ContactDataState) => state.customer.address.postalCode = event.target.value)}
-                        value={this.state.customer.address.postalCode}
-                        placeholder="Postal Code" />
+                    {formElements}
                     <Button 
                         btnType="Success"
                         clicked={this.formSubmitHandler.bind(this)}>ORDER</Button>

@@ -112,7 +112,7 @@ class BurgerBuilder extends React.Component<BurgerBuilderProps, BurgerBuilderSta
     purchaseContinueHandler() {
         if(this.state.ingredients) {
             const ingredients = {...this.state.ingredients};
-            const search = (Object.keys(ingredients) as Array<keyof BurgerIngredients>)
+            const search = (Object.keys(ingredients) as Array<keyof typeof ingredients>)
                 .map(key => `${key}=${ingredients[key]}`).join('&');
 
             this.props.history.push({
